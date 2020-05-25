@@ -1,23 +1,20 @@
+import os
 import random
 import csv
 from pprint import pprint
 from datetime import datetime
 import shutil
 
-
-# import pickle
-# RESULT_FILE="result.txt"
-# RESULT_MAP={}
-# RESULT_MAP[person_name] = score
-# pickle.dump(RESULT_MAP, open(RESULT_FILE, 'wb'))
-# result2 = pickle.load(open(RESULT_FILE, 'rb'))
-
-# RESULT_MAP={}
 SCORE_FILE="score.csv"
 SCORE_DATA=[]
+LEVELS = {
+  1: 50,
+  2: 100,
+  3: 200
+}
 
 NOW = datetime.now()
-# date_string = now.strftime("%Y-%m-%dT%H:%M:%S")
+# NOW_STRING = NOW.strftime("%Y-%m-%dT%H:%M:%S")
 NOW_STRING = NOW.isoformat('T', 'seconds')
 
 # --------- functions
@@ -40,20 +37,42 @@ def f_main():
     print("To begin the game, type your name when Gerald asks for it and hit enter.")
     print("To exit the game while the game is still in action, type stop and hit enter.")
     print("")
-    player_name = f_get_name()
-    f_want_to_play_again(player_name)
+    player_name = f_get_name("")
+    level = f_get_level(1)
+    f_want_to_play_again(player_name, level)
+
+    f_write_csv_file()
 
     pprint(SCORE_DATA)
-    f_write_csv_file()
-    shutil.copy(SCORE_FILE, "logs/"+SCORE_FILE + "." + NOW_STRING)
-
     f_print_ranking()
 
 
-def f_get_name():
+def f_get_name(player_name):
+    if player_name != "":
+        ending_prompt = "Great! Is this still " + player_name + " playing the game? n/y "
+        new_player_prompt = input(ending_prompt)
+        if new_player_prompt == "y":
+            print("Welcome back! Thanks for playing again!")
+            return player_name
+
     name_prompt = "What is your name? "
     player_name = input(name_prompt)
     return player_name
+
+def f_get_level(level):
+    print ("  Difficulty Levels:")
+    for i in LEVELS:
+        print("    level %d: numbers fron 1 to %d" % (i, LEVELS[i]))
+
+    are_you_sure_prompt = "Your current level is " + str(level) + ". Do you want to change it? n/y "
+    player_confirmation = input(are_you_sure_prompt)
+    if player_confirmation == "y":
+        prompt = "Pick the new level: "
+        new_level = input(prompt)
+        level = int(new_level)
+
+    print ("You will be playing at level %s, Pick a number between 1 and %s" % (level, LEVELS[level]))
+    return level
 
 
 def f_playing_game(player_name):
@@ -88,19 +107,14 @@ def f_playing_game(player_name):
     # print("Your score is " + str(score))
 
 
-def f_want_to_play_again(player_name):
+def f_want_to_play_again(player_name, level):
     while True:
-        f_playing_game(player_name)
+        f_playing_game(player_name, level)
         prompt = "Do you want to play again? n/y "
         players_input = input(prompt)
         if players_input == "y":
-            ending_prompt = "Great! Is this still " + player_name + " playing the game? n/y "
-            new_player_prompt = input(ending_prompt)
-            if new_player_prompt == "y":
-                print("Welcome back! Thanks for playing again!")
-            else:
-                player_name = f_get_name()
-
+            player_name = f_get_name(player_name)
+            level = f_get_level(level)
         else:
             print("Thank you for playing," + player_name + "!")
             break
@@ -109,23 +123,28 @@ def f_want_to_play_again(player_name):
 def f_read_csv_file():
     print("function f_read_csv_file ...")
     data = []
-    with open(SCORE_FILE) as f:
-        reader = csv.reader(f)
-        # data = list(map(tuple, reader))
-        for (name, date, score) in reader:
-            row=(name, date.strip(), int(score))
-            data.append(row)
+    if os.path.exists(SCORE_FILE):
+        with open(SCORE_FILE) as f:
+            reader = csv.reader(f)
+            for (name, date, score) in reader:
+                row=(name, date.strip(), int(score))
+                data.append(row)
     return data
 
 def f_write_csv_file():
     print ("function f_write_csv_file ...")
+
     with open(SCORE_FILE, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
         writer.writerows(SCORE_DATA)
 
+    if not os.path.exists("logs"):
+        os.mkdir("logs")
+
+    shutil.copy(SCORE_FILE, "logs/"+SCORE_FILE + "." + NOW_STRING)
+
 def f_print_ranking():
     print ("function f_print_ranking ...")
-    print("")
     print("")
 
     # sort data by name
