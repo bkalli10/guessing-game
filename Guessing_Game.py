@@ -40,7 +40,6 @@ def f_main():
     player_name = f_get_name("")
     level = f_get_level(1)
     f_want_to_play_again(player_name, level)
-
     f_write_csv_file()
 
     pprint(SCORE_DATA)
@@ -75,8 +74,8 @@ def f_get_level(level):
     return level
 
 
-def f_playing_game(player_name):
-    computers_number = random.randint(1, 100)
+def f_playing_game(player_name, level):
+    computers_number = random.randint(1, level)
     prompt = "I have thought of a number, " + player_name + ". Take a guess. "
     score = 0
 
