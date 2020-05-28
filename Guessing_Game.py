@@ -10,7 +10,9 @@ SCORE_DATA=[]
 LEVELS = {
   1: 50,
   2: 100,
-  3: 200
+  3: 200,
+  4: 500,
+  5: 1000
 }
 
 NOW = datetime.now()
@@ -61,7 +63,7 @@ def f_get_name(player_name):
 def f_get_level(level):
     print ("  Difficulty Levels:")
     for i in LEVELS:
-        print("    level %d: numbers fron 1 to %d" % (i, LEVELS[i]))
+        print("    level %d: numbers from 1 to %d" % (i, LEVELS[i]))
 
     are_you_sure_prompt = "Your current level is " + str(level) + ". Do you want to change it? n/y "
     player_confirmation = input(are_you_sure_prompt)
@@ -75,7 +77,8 @@ def f_get_level(level):
 
 
 def f_playing_game(player_name, level):
-    computers_number = random.randint(1, level)
+
+    computers_number = random.randint(1, LEVELS[level])
     prompt = "I have thought of a number, " + player_name + ". Take a guess. "
     score = 0
 
@@ -182,6 +185,16 @@ def f_print_ranking():
         prev_score = score
         rank = rank + 1
 
+def f_dummy():
+    i=0
+    while True:
+        computers_number = random.randint(1, 1000)
+        print(computers_number)
+        i=i+1
+        if i==100:
+            break
+
 # --------------------------------------
 if __name__ == "__main__":
     f_main()
+    #f_dummy()
