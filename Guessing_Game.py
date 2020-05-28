@@ -45,7 +45,7 @@ def f_main():
     f_write_csv_file()
 
     pprint(SCORE_DATA)
-    f_print_ranking()
+    f_print_ranking_all()
 
 
 def f_get_name(player_name):
@@ -68,7 +68,7 @@ def f_get_level(level):
     are_you_sure_prompt = "Your current level is " + str(level) + ". Do you want to change it? n/y "
     player_confirmation = input(are_you_sure_prompt)
     if player_confirmation == "y":
-        prompt = "Pick the new level: "
+        prompt = "Pick a new level: "
         new_level = input(prompt)
         level = int(new_level)
 
@@ -94,8 +94,9 @@ def f_playing_game(player_name, level):
             else:
                 pass
         elif computers_number == int(players_guess):
-            print("Well done, " + player_name + "! ")
-            row = (player_name, NOW_STRING, score)
+            print("Your score is: " + str(score))
+            print("Well done, " + player_name + "!")
+            row = (NOW_STRING, level, score, player_name)
             SCORE_DATA.append(row)
             break
         elif computers_number > int(players_guess):
@@ -128,8 +129,8 @@ def f_read_csv_file():
     if os.path.exists(SCORE_FILE):
         with open(SCORE_FILE) as f:
             reader = csv.reader(f)
-            for (name, date, score) in reader:
-                row=(name, date.strip(), int(score))
+            for (date, level, score, name) in reader:
+                row=(date.strip(), int(level), int(score), name.strip())
                 data.append(row)
     return data
 
@@ -145,43 +146,73 @@ def f_write_csv_file():
 
     shutil.copy(SCORE_FILE, "logs/"+SCORE_FILE + "." + NOW_STRING)
 
-def f_print_ranking():
-    print ("function f_print_ranking ...")
-    print("")
+def f_print_ranking_all():
+    print ("function f_print_ranking_all ...")
+    # print("")
+
+    # print SCORE_DATA (raw data) by level just to double check
+    # if f_get_score_for_a_level is returning the data for the level correctly
+    # next 4 levels can be commented out if we don't want it on the screen
+    for level in LEVELS:
+        print ("level: " + str(level))
+        data1 = f_get_score_for_a_level(level)
+        pprint(object=data1, width=20)
+
+    # ranking by level
+    print ("")
+    print(" --- Final Ranking by Level ---")
+    for level in LEVELS:
+        data1 = f_get_score_for_a_level(level)
+        f_print_ranking_level(level, data1)
+
+
+def f_get_score_for_a_level(lvl):
+    data = []
+    for (date, level, score, name) in SCORE_DATA:
+        if level == lvl:
+            row = (date, level, score, name)
+            data.append(row)
+    return data
+
+def f_print_ranking_level(level, data1):
+    # print ("function f_print_ranking ...")
+    print("  Level: " + str(level))
 
     # sort data by name
-    data1 = sorted(SCORE_DATA, key=lambda x: (x[0]))
+    # 0:date, 1:level, 2:score, 3:name
+    data2 = sorted(data1, key=lambda x: (x[3]))
 
     # minScore, name, gamesPlayed, totalScore, avgScore
-    data2=[]
+    data3=[]
     prev_name=''
     data_counter=0
     minScore=1000000
-    for (name, date, score) in data1:
+    for (date, level, score, name) in data2:
         data_counter=data_counter+1
         if data_counter > 1 and prev_name != name:
             row=(minScore, prev_name)
-            data2.append(row)
+            data3.append(row)
             minScore = 1000000
         prev_name = name
         if score < minScore:
             minScore = score
 
     row=(minScore, prev_name)
-    data2.append(row)
+    data3.append(row)
 
-    # sort data by score
-    data3 = sorted(data2, key=lambda x: (x[0], x[1]))
+    # sort data by score, name
+    data4 = sorted(data3, key=lambda x: (x[0], x[1]))
 
     rank = 1
     display_rank = 0
     prev_score = 0
-    print("  rank  score   name")
-    print("  ----  -----   ----")
-    for (score, name) in data3:
+    blanks = "            "
+    print(blanks + "  rank  score   name")
+    print(blanks + "  ----  -----   ----")
+    for (score, name) in data4:
         if score != prev_score:
             display_rank = display_rank + 1
-        print (" %4d %5d     %s" % (display_rank, score, name))
+        print ("%s %4d %5d     %s" % (blanks, display_rank, score, name))
         prev_score = score
         rank = rank + 1
 
